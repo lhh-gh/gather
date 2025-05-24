@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Server;
 
+use App\Tool\BIN;
 use Hyperf\Contract\OnReceiveInterface;
 
 class TcpServer implements OnReceiveInterface
@@ -24,7 +25,8 @@ class TcpServer implements OnReceiveInterface
      */
     public function onReceive($server, int $fd, int $reactorId, string $data): void
     {
-        echo $data.PHP_EOL;
+         BIN::dump($data);
+         echo "recv: $data\n";
         $server->send($fd, 'recv:' . $data);
     }
     public function onConnect($server, int $fd): void
