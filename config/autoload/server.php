@@ -12,28 +12,43 @@ declare(strict_types=1);
 use Hyperf\Server\Event;
 use Hyperf\Server\Server;
 use Swoole\Constant;
-
+use function Hyperf\Support\env;
 return [
     'mode' => SWOOLE_PROCESS,
     'servers' => [
+//        [
+//            'name' => 'http',
+//            'type' => Server::SERVER_HTTP,
+//            'host' => '0.0.0.0',
+//            'port' => 9501,
+//            'sock_type' => SWOOLE_SOCK_TCP,
+//            'callbacks' => [
+//                Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
+//            ],
+//            'options' => [
+//                // Whether to enable request lifecycle event
+//                'enable_request_lifecycle' => false,
+//            ],
+//        ],
         [
-            'name' => 'http',
-            'type' => Server::SERVER_HTTP,
+            'name' => 'tcp',
+            'type' => Server::SERVER_BASE,
             'host' => '0.0.0.0',
-            'port' => 9501,
+            'port' =>  (int)env('TCP_PORT', 9500),
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
-                Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
+                Event::ON_RECEIVE => [App\Server\TcpServer::class, 'onReceive'],
+                Event::ON_CONNECT => [App\Server\TcpServer::class, 'onConnect'],
+                Event::ON_CLOSE => [App\Server\TcpServer::class, 'onClose'],
             ],
-            'options' => [
-                // Whether to enable request lifecycle event
-                'enable_request_lifecycle' => false,
+            'settings' => [
+                // 按需配置
             ],
         ],
     ],
     'settings' => [
         Constant::OPTION_ENABLE_COROUTINE => true,
-        Constant::OPTION_WORKER_NUM => swoole_cpu_num(),
+        Constant::OPTION_WORKER_NUM =>1,// swoole_cpu_num(),
         Constant::OPTION_PID_FILE => BASE_PATH . '/runtime/hyperf.pid',
         Constant::OPTION_OPEN_TCP_NODELAY => true,
         Constant::OPTION_MAX_COROUTINE => 100000,
